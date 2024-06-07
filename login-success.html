@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe Search</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+      }
+      .result {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Recipe Search</h1>
+      <form id="recipeForm">
+        <label for="recipeName">Enter Recipe Name:</label>
+        <input type="text" id="recipeName" name="recipeName" required />
+        <button type="submit">Get Recipe</button>
+      </form>
+      <div id="result" class="result"></div>
+    </div>
+
+    <script>
+      document
+        .getElementById("recipeForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          const recipeName = document.getElementById("recipeName").value;
+
+          fetch(`/recipe?name=${recipeName}`)
+            .then((response) => response.json())
+            .then((data) => {
+              const resultDiv = document.getElementById("result");
+              if (data.meals) {
+                const recipe = data.meals[0];
+                resultDiv.innerHTML = `
+                            <h2>${recipe.strMeal}</h2>
+                            <img src="${recipe.strMealThumb}" alt="${
+                  recipe.strMeal
+                }" style="width: 100%; max-width: 400px;">
+                            <h3>Ingredients:</h3>
+                            <ul>
+                                ${getIngredientsList(recipe)
+                                  .map((ingredient) => `<li>${ingredient}</li>`)
+                                  .join("")}
+                            </ul>
+                            <h3>Instructions:</h3>
+                            <p>${recipe.strInstructions}</p>
+                        `;
+              } else {
+                resultDiv.innerHTML = "No recipe found";
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching the recipe:", error);
+              document.getElementById("result").innerHTML =
+                "An error occurred while fetching the recipe";
+            });
+        });
+
+      function getIngredientsList(recipe) {
+        const ingredients = [];
+        for (let i = 1; i <= 20; i++) {
+          if (recipe[`strIngredient${i}`]) {
+            ingredients.push(
+              `${recipe[`strIngredient${i}`]} - ${recipe[`strMeasure${i}`]}`
+            );
+          } else {
+            break;
+          }
+        }
+        return ingredients;
+      }
+    </script>
+  </body>
+</html>
